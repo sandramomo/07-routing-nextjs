@@ -41,3 +41,9 @@ export function deleteNote(id: string): Promise<Note> {
 export function fetchNoteById(id: string): Promise<Note> {
   return axios.get<Note>(`/notes/${id}`).then(res => res.data)
 }
+export async function getNotesByCategory(tag?:string): Promise<NotesHttpResponse>
+{
+  return axios
+    .get<NotesHttpResponse>("/notes" , { params: { tag } })
+    .then((res) => res.data);
+}
