@@ -1,10 +1,9 @@
-"use client";
-
+'use client';
 import { useState, type MouseEventHandler } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebouncedCallback } from "use-debounce";
 
-import { getNotesByQuery } from "@/lib/api";
+import { getNotesByQuery, NoteTag} from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import NoteList from "@/components/NoteList/NoteList";
@@ -12,20 +11,20 @@ import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
 import css from "./Notes.module.css";
+import { Note } from "@/types/note";
 
-function NotesClient() {
+interface NotesClientProps {
+  tag?: NoteTag;
+}
 
+function NotesClient({ tag }: NotesClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-
-  const queryKey: [string, string, number] = ["note", searchTerm, currentPage];
-
-
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   }, 1000);
 
   const handleSearchChange = (query: string) => {
@@ -33,20 +32,15 @@ function NotesClient() {
   };
 
   const { data, isSuccess } = useQuery({
-    queryKey,
-    queryFn: () => getNotesByQuery(searchTerm, currentPage),
-    placeholderData: (prev) => prev,
+    queryKey: ["notes", searchTerm, tag ?? "", currentPage],
+    queryFn: () => getNotesByQuery(searchTerm, currentPage, tag),
   });
 
+  const notes: Note[] = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
 
-  const handleOpenModal: MouseEventHandler<HTMLButtonElement> = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+  const handleOpenModal: MouseEventHandler<HTMLButtonElement> = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
   return (
     <div className={css.app}>
@@ -66,13 +60,11 @@ function NotesClient() {
         </button>
       </div>
 
-      {isSuccess && data && (
-        <NoteList queryKey={queryKey} />
-      )}
+      {isSuccess && <NoteList notes={notes} />}
 
       {isModalOpen && (
         <Modal onClose={handleCloseModal}>
-          <NoteForm handleCancelNote={handleCloseModal} queryKey={queryKey} />
+          <NoteForm handleCancelNote={handleCloseModal} />
         </Modal>
       )}
     </div>

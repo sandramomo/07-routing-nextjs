@@ -15,6 +15,7 @@ const NotePreviewClient = ({ noteId }: Props) => {
   const { data: note, isLoading, isError } = useQuery({
     queryKey: ["note", noteId],
     queryFn: () => fetchNoteById(noteId),
+    refetchOnMount: false,
   });
 
   const close = () => router.back();
@@ -30,12 +31,14 @@ const NotePreviewClient = ({ noteId }: Props) => {
       <p>Error loading note.</p>
     </Modal>
   );
-
   return (
     <Modal onClose={close}>
       <div className={css.modalContent}>
         <h2>{note.title}</h2>
         <p>{note.content}</p>
+        <p><strong>Tag:</strong> {note.tag}</p>
+        <p><strong>Created at:</strong> {new Date(note.createdAt).toLocaleString()}</p>
+        <button className={css.button} onClick={close}>Close</button>
       </div>
     </Modal>
   );

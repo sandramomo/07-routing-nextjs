@@ -6,7 +6,6 @@ import { addNote } from "@/lib/api";
 
 interface NoteFormProps {
   handleCancelNote: () => void;
-  queryKey: [string, string, number];
 }
 
 interface FormValues {
@@ -27,13 +26,13 @@ const Schema = Yup.object().shape({
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag value"),
 });
 
-export default function NoteForm({ handleCancelNote, queryKey }: NoteFormProps) {
+export default function NoteForm({ handleCancelNote }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
     mutationFn: addNote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+     queryClient.invalidateQueries({ queryKey: ["notes"] }); 
       handleCancelNote();
     },
     onError: (error) => {
