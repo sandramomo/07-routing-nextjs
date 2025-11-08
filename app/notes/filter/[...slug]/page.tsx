@@ -1,7 +1,7 @@
 
-
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import NoteList from '@/components/NoteList/NoteList';
-import { getNotesByCategory } from '@/lib/api';
+import { getNotesByQuery, NoteTag } from '@/lib/api';
 
 
 type Props = {
@@ -9,18 +9,24 @@ type Props = {
 };
 
 const NotesByCategory = async ({ params }: Props) => {
-    const { slug } = await params;
-  const category = slug[0] === 'all' ? undefined : slug[0];
-    console.log(category)
-    const response = await getNotesByCategory(category);
-    console.log(response)
+  const { slug } = await params;
+    const category = slug[0] === 'all' ? undefined : slug[0] as NoteTag;
+  const queryClient = new QueryClient(); 
+  
+  await queryClient.prefetchQuery({
+   queryKey: ["notes", category ?? "", 1],
+    queryFn: () => getNotesByQuery(undefined, 1, category),
+  });
+  const dehydratedState = dehydrate(queryClient); 
 
-  return (
-    <div>
-          <h1>Notes List</h1>
-          {response?.notes?.length > 0 && <NoteList notes={response.notes} queryKey={["notes", category ?? "", 1]} />}
-    </div>
+    return (
+    <HydrationBoundary state={dehydratedState}>
+      <div>
+        <h1>Notes List</h1>
+  <NoteList queryKey={["notes", category ?? NoteTag.all, 1]} />
+      </div>
+    </HydrationBoundary>
   );
-};
+}; 
 
 export default NotesByCategory;

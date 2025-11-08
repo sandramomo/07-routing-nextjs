@@ -1,19 +1,29 @@
 'use client';
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import css from "./NoteList.module.css";
 import type { Note } from "../../types/note";
-import { deleteNote } from "@/lib/api";
+import { deleteNote, getNotesByQuery, NoteTag } from "@/lib/api";
 import Link from "next/link";
 
 interface NoteListProps {
-  notes: Note[];
   queryKey: [string, string, number];
 }
 
-export default function NoteList({ notes, queryKey }: NoteListProps) {
+export default function NoteList({queryKey }: NoteListProps) {
   const queryClient = useQueryClient();
+  
 
+  const [, categoryStr, page] = queryKey;
+    const category: NoteTag | undefined = Object.values(NoteTag).includes(categoryStr as NoteTag)
+    ? (categoryStr as NoteTag)
+    : undefined;
 
+   const { data} = useQuery({
+    queryKey,
+    queryFn: () => getNotesByQuery(undefined, page, category),
+  });
+
+    const notes = data?.notes ?? [];
   const { mutate } = useMutation({
     mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {

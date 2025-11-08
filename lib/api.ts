@@ -1,7 +1,14 @@
 import { NewNote, Note } from "@/types/note";
 import Axios from "axios";
 
-
+export enum NoteTag {
+  all = '',
+  Work = "Work",
+  Meeting = "Meeting",
+  Personal = "Personal",
+  Shopping = "Shopping",
+  Todo = "Todo",
+}
 
 interface NotesHttpResponse {
   notes: Note[],
@@ -23,10 +30,10 @@ const axios = Axios.create({
   },
 });
 
-export async function getNotesByQuery(search: string, page: number): Promise<NotesHttpResponse>
+export async function getNotesByQuery(search?: string, page?: number, tag?:NoteTag): Promise<NotesHttpResponse>
 {
   return axios
-    .get<NotesHttpResponse>("/notes" , { params: { search, page } })
+    .get<NotesHttpResponse>("/notes" , { params: { search, page, tag } })
     .then((res) => res.data);
 }
 
@@ -40,10 +47,4 @@ export function deleteNote(id: string): Promise<Note> {
 
 export function fetchNoteById(id: string): Promise<Note> {
   return axios.get<Note>(`/notes/${id}`).then(res => res.data)
-}
-export async function getNotesByCategory(tag?:string): Promise<NotesHttpResponse>
-{
-  return axios
-    .get<NotesHttpResponse>("/notes" , { params: { tag } })
-    .then((res) => res.data);
 }
