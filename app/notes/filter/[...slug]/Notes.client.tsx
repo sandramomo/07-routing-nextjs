@@ -6,12 +6,10 @@ import { useDebouncedCallback } from "use-debounce";
 import { getNotesByQuery, NoteTag} from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
-import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
 import css from "./Notes.module.css";
-import { Note } from "@/types/note";
 
 interface NotesClientProps {
   tag?: NoteTag;
@@ -31,12 +29,11 @@ function NotesClient({ tag }: NotesClientProps) {
     debouncedSearch(query);
   };
 
-  const { data, isSuccess } = useQuery({
+  const { data } = useQuery({
     queryKey: ["notes", searchTerm, tag ?? "", currentPage],
     queryFn: () => getNotesByQuery(searchTerm, currentPage, tag),
   });
 
-  const notes: Note[] = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
 
   const handleOpenModal: MouseEventHandler<HTMLButtonElement> = () => setIsModalOpen(true);
@@ -59,8 +56,6 @@ function NotesClient({ tag }: NotesClientProps) {
           Create note +
         </button>
       </div>
-
-      {isSuccess && <NoteList notes={notes} />}
 
       {isModalOpen && (
         <Modal onClose={handleCloseModal}>
